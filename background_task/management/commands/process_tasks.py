@@ -10,6 +10,7 @@ from django.utils import autoreload
 
 from background_task.tasks import tasks, autodiscover
 from background_task.utils import SignalManager
+from background_task.signals import process_tasks_started
 from compat import close_connection
 
 
@@ -96,6 +97,9 @@ class Command(BaseCommand):
         autodiscover()
 
         start_time = time.time()
+
+        # Send signal that the task processor has started
+        process_tasks_started.send_robust(sender=self.__class__)
 
         while (duration <= 0) or (time.time() - start_time) <= duration:
             if sig_manager.kill_now:
